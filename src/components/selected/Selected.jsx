@@ -1,17 +1,19 @@
 import "../../index.css";
 
-export function Selected({options,id,placeholder}) {
-    return (
-      <>
-        <div className="flex gap-2 my-10 lg:my-8 rounded-xl">
-  
-          <select id={id} className="w-full text-base shadow-md p-3 rounded-xl text-gray-500 border-none focus:outline-none focus:ring-0">
+export function Selected({ options, id, placeholder, label, onChange, cBorder }) {
+  return (
+    <>
+      <div className="grid my-4">
+        <label className="block font-medium text-sky-500">{label}</label>
+        <div className="flex gap-2 rounded-xl my-1">
+          <select onChange={onChange} id={id} className={`text-base shadow-md p-3 rounded-xl w-full dark:bg-[#404040] dark:text-white ${cBorder}`}>
             <option value="">{placeholder}</option>
             {options.map((option) => (
-            <option key={option.id} value={option.id}>{option.name}</option>
-          ))}
+              <option key={option.id} value={option.id}>{option.name}</option>
+            ))}
           </select>
         </div>
-      </>
-    );
-  }
+      </div>
+    </>
+  );
+}

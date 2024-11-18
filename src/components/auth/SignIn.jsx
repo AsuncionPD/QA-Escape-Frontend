@@ -5,6 +5,9 @@ import { AuthCarousel } from "./AuthCaruosel";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useUser } from "../../context/UserContext.jsx";
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+
 
 export function SignIn() {
     const { t } = useTranslation();
@@ -13,9 +16,42 @@ export function SignIn() {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
     const { user, setUser } = useUser();
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [showError, setShowError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const [emailError, setEmailError] = useState(false);
+    const [passwordError, setPasswordError] = useState(false);
+
+    const validateFields = () => {
+        let isValid = true;
+
+        if (!email) {
+            setEmailError(true);
+            isValid = false;
+        } else {
+            setEmailError(false);
+        }
+
+        if (!password) {
+            setPasswordError(true);
+        } else {
+            setPasswordError(false);
+        }
+
+        return  isValid;
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if(!validateFields()) {
+            setShowError(true);
+            setShowSuccess(false);
+            return;
+        }
+
+        setShowError(false);
 
         const response = await fetch('http://localhost/escape-desarrollo-backend/public/api/login', {
             method: 'POST',
@@ -32,9 +68,18 @@ export function SignIn() {
         const data = await response.json();
 
         if (response.ok) {
-            navigate('/home');
+            setShowError(false);
+            setShowSuccess(true);
             setUser(data.user);
             console.log(data.user);
+            setTimeout(() => {
+                navigate('/home');
+            }, 2500);
+        }
+        else 
+        {
+            setShowSuccess(false);
+            setShowError(true);
         }
     };
 
@@ -42,10 +87,10 @@ export function SignIn() {
         <div className="grid justify-center items-center h-[100vh] md:grid-cols-2 gap-4">
         <div className="flex justify-center items-center">
             <form className="w-full lg:w-2/4 " onSubmit={handleSubmit}>
-                <img className="w-[15rem] mx-auto mt-8 mb-16 " src="../src/assets/imgs/logo-celeste.png" alt="Logo" />
-
-                <AuthInput name="email" placeholder={t('iEmail')} type="email" onChange={e => setEmail(e.target.value)}/>
-                <AuthInput name="password" placeholder={t('iPassword')} type="password" className="mb-4 lg:mb-4" onChange={e => setPassword(e.target.value)}/>
+                <img className="w-[12rem] mx-auto mt-8 mb-12 " src="../src/assets/imgs/logo-celeste.png" alt="Logo" /> 
+                <h2 className="text-4xl font-bold text-center mb-8 text-sky-500">{t('login')}</h2>
+                <AuthInput name="email" placeholder={t('iEmail')} type="email" onChange={e => setEmail(e.target.value)} className="{emailError ? 'border-red-500' : ''}"/> {emailError && <p className="text-red-500 text-sm mb-5">Este campo es obligatorio</p>}
+                <AuthInput name="password" placeholder={t('iPassword')} type="password" onChange={e => setPassword(e.target.value)} className="{passwordError ? 'border-red-500' : ''}"/> {passwordError && <p className="text-red-500 text-sm mb-5">Este campo es obligatorio</p>}
                 <div className="text-right">
                     <NavLink className="text-sky-500 font-medium" to="/forgot-password">{t('forgotPassword')}</NavLink>
                 </div>
@@ -57,7 +102,7 @@ export function SignIn() {
                     value={t('iSignIn')}
                 />
 
-                <p className="text-gray-400 text-center">{t('goSignUp')}
+                <p className="text-gray-400 text-center dark:text-white">{t('goSignUp')}
                     <NavLink className="text-sky-500 ml-2 font-medium" to="/signUpUser">{t('createAccount')}</NavLink>
                 </p>
             </form> 
@@ -66,6 +111,20 @@ export function SignIn() {
         </div>
 
         <AuthCarousel />
+
+        {showSuccess && (
+            <Alert severity="success" className="absolute top-4 right-4">
+                <AlertTitle>Éxito</AlertTitle>
+                ¡Inicio de sesión correctamente! Serás redirigido en breve.
+            </Alert>
+        )}
+
+        {showError && (
+            <Alert severity="error" className="absolute top-4 right-4">
+                <AlertTitle>Error</AlertTitle>
+                ¡Error! Credenciales inválidas, por favor introduce las correctas.
+            </Alert>
+        )}
 
         </div>
     );
